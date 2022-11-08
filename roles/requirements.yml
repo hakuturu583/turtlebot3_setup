@@ -1,0 +1,4 @@
+---
+- name: community.general
+  src: https://github.com/ansible-collections/community.general.git
+  version: 6.0.0

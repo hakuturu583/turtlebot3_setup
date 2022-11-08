@@ -1,0 +1,33 @@
+---
+- hosts: all
+  vars_files:
+    - vars/image_url.yml
+  tasks:
+    - name: Install rpi-imager
+      snap:
+        name:
+          - rpi-imager
+      become: yes
+    - name: download image
+      get_url:
+        url: "{{ ubuntu_20_04.image_url }}"
+        checksum: sha256:"{{ ubuntu_20_04.sha256sum }}"
+        dest: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}
+#    - name: flash image {{ sd_device }}
+#      shell: rpi-imager --cli /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} {{ sd_device }}
+    - name: install qemu
+      apt:
+        name: "{{ packages }}"
+        state: present
+        update_cache: yes
+        cache_valid_time: 3600
+      vars:
+        packages:
+          - qemu-user-static
+      become: yes
+    - name: copy qemu-user-static binary to sd card {{ sd_device }}
+      copy:
+        src: /usr/bin/qemu-arm-static
+        dest: /media/{{ ansible_user }}/writable/usr/bin/qemu-arm-static
+        mode: a+x
+      become: true
