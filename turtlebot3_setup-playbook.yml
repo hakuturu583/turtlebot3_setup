@@ -3,6 +3,7 @@
   vars_files:
     - vars/image_url.yml
     - vars/user_settings.yml
+    - vars/memory_card_settings.yml
   tasks:
     - name: Install rpi-imager
       snap:
@@ -16,6 +17,9 @@
         dest: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}
 #    - name: flash image {{ sd_device }}
 #      shell: rpi-imager --cli /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} {{ sd_device }}
+    - name: expand partition
+      shell: resizepart {{ sd_device }} 2 {{ block_length_64GB }}
+      become: true
     - name: install qemu
       apt:
         name: "{{ packages }}"
@@ -42,6 +46,7 @@
         dest: /media/{{ ansible_user }}/writable/usr/bin/qemu-arm-static
         mode: a+x
         follow: yes
+      become: yes
     - name: delete user {{ turtlebot3_username }} for turtlebot3
       shell: chroot /media/ouxtpolaris/writable/ userdel {{ turtlebot3_username }}
       become: yes
@@ -51,8 +56,11 @@
       become: yes
     - name: copy ROS install script for noetic
       copy:
-        src: "{{ ansible_env.PWD }}/scripts/install_noetic.sh"
-        dest: /media/{{ ansible_user }}/writable/home/install_ros.sh
+        src: "{{ ansible_env.PWD }}/scripts/register_ros_keys.sh"
+        dest: /media/{{ ansible_user }}/writable/home/register_ros_keys.sh
         mode: a+x
         follow: yes
+      become: yes
+    - name: register ros keys
+      shell: chroot /media/{{ ansible_user }}/writable /bin/bash home/register_ros_keys.sh
       become: yes
