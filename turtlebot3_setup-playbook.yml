@@ -3,24 +3,13 @@
   vars_files:
     - vars/image_url.yml
     - vars/user_settings.yml
-    - vars/memory_card_settings.yml
   tasks:
-    - name: Install rpi-imager
-      snap:
-        name:
-          - rpi-imager
-      become: yes
     - name: download image
       get_url:
         url: "{{ ubuntu_20_04.image_url }}"
-        checksum: sha256:"{{ ubuntu_20_04.sha256sum }}"
-        dest: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}
-#    - name: flash image {{ sd_device }}
-#      shell: rpi-imager --cli /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} {{ sd_device }}
-    - name: expand partition
-      shell: resizepart {{ sd_device }} 2 {{ block_length_64GB }}
-      become: true
-    - name: install qemu
+        checksum: sha256:"{{ ubuntu_20_04.sha256sum_xz }}"
+        dest: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
+    - name: install packages
       apt:
         name: "{{ packages }}"
         state: present
@@ -29,38 +18,68 @@
       vars:
         packages:
           - qemu-user-static
+          - xz-utils
       become: yes
-    - name: remout {{ sd_device }}
-      shell: mount -o remount,rw {{ sd_device }}2 /media/{{ ansible_user }}/writable/
-      become: true
-    - name: copy resolv.conf to sd card {{ sd_device }}
-      copy:
-        src: /etc/resolv.conf
-        dest: /media/{{ ansible_user }}/writable/etc/resolv.conf
-        mode: a+x
-        follow: yes
+    - name: calculate checksum of unziped image file
+      stat:
+        path: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}
+        checksum_algorithm: sha256
+        get_checksum: yes
+      register: image_checksum
+    - name: unarchive image
+      shell: xz -d -k -f --threads=4 /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
+      when: image_checksum.stat.checksum != "{{ ubuntu_20_04.sha256sum }}"
+    - name: flash image
+      shell: dd bs=32M if=/home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} of=/dev/sdc
       become: yes
-    - name: copy qemu-user-static binary to sd card {{ sd_device }}
-      copy:
-        src: /usr/bin/qemu-arm-static
-        dest: /media/{{ ansible_user }}/writable/usr/bin/qemu-arm-static
-        mode: a+x
-        follow: yes
+    - name: unmount {{ sd_device }}2 partition
+      shell: umount /media/{{ ansible_user }}/writable
       become: yes
-    - name: delete user {{ turtlebot3_username }} for turtlebot3
-      shell: chroot /media/ouxtpolaris/writable/ userdel {{ turtlebot3_username }}
+    - name: remove {{ sd_device }}2 partition
+      shell: parted {{ sd_device }} rm 2
       become: yes
-      ignore_errors: yes
-    - name: add user {{ turtlebot3_username }} for turtlebot3
-      shell: chroot /media/{{ ansible_user }}/writable/ useradd -m {{ turtlebot3_username }} -g root -p {{ turtlebot3_password }}
+    - name: remake {{ sd_device }}2 partition
+      shell: parted -s {{ sd_device }} mkpart primary 526336s 100%
       become: yes
-    - name: copy ROS install script for noetic
-      copy:
-        src: "{{ ansible_env.PWD }}/scripts/register_ros_keys.sh"
-        dest: /media/{{ ansible_user }}/writable/home/register_ros_keys.sh
-        mode: a+x
-        follow: yes
+    - name: make mount point
+      file:
+        path: /media/{{ ansible_user }}/writable
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "root"
+        mode: "775"
       become: yes
-    - name: register ros keys
-      shell: chroot /media/{{ ansible_user }}/writable /bin/bash home/register_ros_keys.sh
+    - name: mount {{ sd_device }}2 partition
+      shell: mount {{ sd_device }}2 /media/{{ ansible_user }}/writable
       become: yes
+    # - name: copy resolv.conf to sd card {{ sd_device }}
+    #   copy:
+    #     src: /etc/resolv.conf
+    #     dest: /media/{{ ansible_user }}/writable/etc/resolv.conf
+    #     mode: a+x
+    #     follow: yes
+    #   become: yes
+    # - name: copy qemu-user-static binary to sd card {{ sd_device }}
+    #   copy:
+    #     src: /usr/bin/qemu-arm-static
+    #     dest: /media/{{ ansible_user }}/writable/usr/bin/qemu-arm-static
+    #     mode: a+x
+    #     follow: yes
+    #   become: yes
+    # - name: delete user {{ turtlebot3_username }} for turtlebot3
+    #   shell: chroot /media/ouxtpolaris/writable/ userdel {{ turtlebot3_username }}
+    #   become: yes
+    #   ignore_errors: yes
+    # - name: add user {{ turtlebot3_username }} for turtlebot3
+    #   shell: chroot /media/{{ ansible_user }}/writable/ useradd -m {{ turtlebot3_username }} -g root -p {{ turtlebot3_password }}
+    #   become: yes
+    # - name: copy ROS install script for noetic
+    #   copy:
+    #     src: "{{ ansible_env.PWD }}/scripts/register_ros_keys.sh"
+    #     dest: /media/{{ ansible_user }}/writable/home/register_ros_keys.sh
+    #     mode: a+x
+    #     follow: yes
+    #   become: yes
+    # - name: register ros keys
+    #   shell: chroot /media/{{ ansible_user }}/writable /bin/bash home/register_ros_keys.sh
+    #   become: yes

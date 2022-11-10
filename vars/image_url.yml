@@ -1,5 +1,6 @@
 ---
 ubuntu_20_04: 
   image_url: https://cdimage.ubuntu.com/releases/20.04.1/release/ubuntu-20.04.1-preinstalled-server-arm64+raspi.img.xz?_ga=2.259723146.1421424422.1667645230-1034373496.1667645230
-  sha256sum: aadc64a1d069c842e56a4289fe1a6b4b5a0af4efcf95bcce78eb2a80fe5270f4
-  filename: ubuntu_20_04_rpi.img.xz
+  sha256sum_xz: aadc64a1d069c842e56a4289fe1a6b4b5a0af4efcf95bcce78eb2a80fe5270f4
+  sha256sum: 77ebb169966e71da876fed84fe3649dd3a082d14e3f3759163b5cebc57ab6b8d
+  filename: ubuntu_20_04_rpi.img
