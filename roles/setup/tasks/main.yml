@@ -20,3 +20,22 @@
 - name: add user {{ turtlebot3_username }} for turtlebot3
   shell: chroot /media/{{ ansible_user }}/writable/ useradd -m {{ turtlebot3_username }} -g root -p {{ turtlebot3_password }}
   become: yes
+- name: copy install script for ROS1
+  copy:
+    src: "{{ ansible_env.PWD }}/scripts/register_ros_keys.sh"
+    dest: /media/{{ ansible_user }}/writable/home/register_ros_keys.sh
+    mode: a+x
+    follow: yes
+  become: yes
+  tags:
+    - noetic
+- name: copy install script for ROS2
+  copy:
+    src: "{{ ansible_env.PWD }}/scripts/register_ros2_keys.sh"
+    dest: /media/{{ ansible_user }}/writable/home/register_ros2_keys.sh
+    mode: a+x
+    follow: yes
+  become: yes
+  tags:
+    - eloquent
+    - foxy

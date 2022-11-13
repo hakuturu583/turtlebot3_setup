@@ -40,7 +40,7 @@
   become: yes
 - name: make mount point
   file:
-    path: /media/{{ ansible_user }}/turtlebot3
+    path: /media/{{ ansible_user }}/mount_point
     state: directory
     owner: "{{ ansible_user }}"
     group: "root"
@@ -48,7 +48,7 @@
   become: yes
 - name: mount {{ sd_device }}2 partition
   mount:
-    path: /media/{{ ansible_user }}/turtlebot3
+    path: /media/{{ ansible_user }}/mount_point
     src: "{{ sd_device }}2"
     state: present
     fstype: ext4
