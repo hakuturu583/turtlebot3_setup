@@ -39,3 +39,29 @@
   tags:
     - eloquent
     - foxy
+- name: run install script for ROS1
+  shell: chroot /media/{{ ansible_user }}/writable/ /bin/bash /home/register_ros_keys.sh
+  tags:
+    - noetic
+  become: yes
+- name: run install script for ROS2
+  shell: chroot /media/{{ ansible_user }}/writable /home/register_ros2_keys.sh
+  tags:
+    - eloquent
+    - foxy
+  become: yes
+- name: install ROS (noetic)
+  shell: chroot /media/{{ ansible_user }}/writable apt install ros-noetic-ros-base
+  tags:
+    - noetic
+  become: yes
+- name: install ROS2 (eloquent)
+  shell: chroot /media/{{ ansible_user }}/writable apt install ros-eloquent-ros-base
+  tags:
+    - eloquent
+  become: yes
+- name: install ROS2 (foxy)
+  shell: chroot /media/{{ ansible_user }}/writable apt install ros-foxy-ros-base
+  tags:
+    - foxy
+  become: yes
