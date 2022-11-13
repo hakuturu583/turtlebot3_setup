@@ -25,10 +25,12 @@
   shell: xz -d -k -f --threads=4 /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
   when: image_checksum.stat.exists == false or image_checksum.stat.checksum != "{{ ubuntu_20_04.sha256sum }}"
 - name: flash image
-  shell: dd bs=32M if=/home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} of=/dev/sdc
+  shell: dd bs=512M if=/home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} of=/dev/sdc
   become: yes
 - name: unmount {{ sd_device }}2 partition
-  shell: umount /media/{{ ansible_user }}/writable
+  mount:
+    path: /media/{{ ansible_user }}/turtlebot3
+    state: unmounted
   become: yes
 - name: remove {{ sd_device }}2 partition
   shell: parted {{ sd_device }} rm 2
@@ -45,5 +47,9 @@
     mode: "775"
   become: yes
 - name: mount {{ sd_device }}2 partition
-  shell: mount {{ sd_device }}2 /media/{{ ansible_user }}/turtlebot3
+  mount:
+    path: /media/{{ ansible_user }}/turtlebot3
+    src: "{{ sd_device }}2"
+    state: present
+    fstype: ext4
   become: yes

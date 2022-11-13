@@ -9,43 +9,11 @@
       - noetic
       - eloquent
       - foxy
-    # - name: copy resolv.conf to sd card {{ sd_device }}
-    #   copy:
-    #     src: /etc/resolv.conf
-    #     dest: /media/{{ ansible_user }}/writable/etc/resolv.conf
-    #     mode: a+x
-    #     follow: yes
-    #   become: yes
+    # - role: setup
     #   tags:
-    #     - noetic
-    #     - eloquent
-    #     - foxy
-    # - name: copy qemu-user-static binary to sd card {{ sd_device }}
-    #   copy:
-    #     src: /usr/bin/qemu-arm-static
-    #     dest: /media/{{ ansible_user }}/writable/usr/bin/qemu-arm-static
-    #     mode: a+x
-    #     follow: yes
-    #   become: yes
-    #   tags:
-    #     - noetic
-    #     - eloquent
-    #     - foxy
-    # - name: delete user {{ turtlebot3_username }} for turtlebot3
-    #   shell: chroot /media/ouxtpolaris/writable/ userdel {{ turtlebot3_username }}
-    #   become: yes
-    #   ignore_errors: yes
-    #   tags:
-    #     - noetic
-    #     - eloquent
-    #     - foxy
-    # - name: add user {{ turtlebot3_username }} for turtlebot3
-    #   shell: chroot /media/{{ ansible_user }}/writable/ useradd -m {{ turtlebot3_username }} -g root -p {{ turtlebot3_password }}
-    #   become: yes
-    #   tags:
-    #     - noetic
-    #     - eloquent
-    #     - foxy
+    #   - noetic
+    #   - eloquent
+    #   - foxy
 
     # - name: copy install script for ROS1
     #   copy:
