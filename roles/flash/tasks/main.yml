@@ -1,0 +1,118 @@
+---
+- name: check mout point exists
+  stat:
+    path: /media/{{ ansible_user }}/writable
+  register: mount_point_exists
+- name: remove mount point
+  shell: |
+    find /media/{{ ansible_user }}/writable -type d -empty -delete
+  when:
+    - mount_point_exists.stat.isdir is defined
+    - mount_point_exists.stat.isdir
+  become: yes
+- name: download image
+  get_url:
+    url: "{{ ubuntu_20_04.image_url }}"
+    checksum: sha256:"{{ ubuntu_20_04.sha256sum_xz }}"
+    dest: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
+- name: check mout point exists
+  stat:
+    path: /media/{{ ansible_user }}/writable
+  register: mount_point_exists
+- name: remove mount point
+  shell: |
+    find /media/{{ ansible_user }}/writable -type d -empty -delete
+  when:
+    - mount_point_exists.stat.isdir is defined
+    - mount_point_exists.stat.isdir
+- name: download image
+  get_url:
+    url: "{{ ubuntu_20_04.image_url }}"
+    checksum: sha256:"{{ ubuntu_20_04.sha256sum_xz }}"
+    dest: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
+- name: install packages
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  vars:
+    packages:
+      - qemu-user-static
+      - xz-utils
+  become: yes
+- name: calculate checksum of unziped image file
+  stat:
+    path: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}
+    checksum_algorithm: sha256
+    get_checksum: yes
+  register: image_checksum
+- name: unarchive image
+  shell: xz -d -k -f --threads=4 /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
+  when: image_checksum.stat.checksum != "{{ ubuntu_20_04.sha256sum }}"
+- name: flash image
+  shell: dd bs=32M if=/home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} of=/dev/sdc
+  become: yes
+- name: unmount {{ sd_device }}2 partition
+  shell: umount /media/{{ ansible_user }}/writable
+  become: yes
+- name: remove {{ sd_device }}2 partition
+  shell: parted {{ sd_device }} rm 2
+  become: yes
+- name: remake {{ sd_device }}2 partition
+  shell: parted -s {{ sd_device }} mkpart primary 526336s 100%
+  become: yes
+- name: make mount point
+  file:
+    path: /media/{{ ansible_user }}/writable
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "root"
+    mode: "775"
+  become: yes
+- name: mount {{ sd_device }}2 partition
+  shell: mount {{ sd_device }}2 /media/{{ ansible_user }}/writable
+  become: yes
+- name: install apt depends
+  apt:
+    name: "{{ packages }}"
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  vars:
+    packages:
+      - qemu-user-static
+      - xz-utils
+  become: yes
+- name: calculate checksum of unziped image file
+  stat:
+    path: /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}
+    checksum_algorithm: sha256
+    get_checksum: yes
+  register: image_checksum
+- name: unarchive image
+  shell: xz -d -k -f --threads=4 /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
+  when: image_checksum.stat.checksum != "{{ ubuntu_20_04.sha256sum }}"
+- name: flash image
+  shell: dd bs=32M if=/home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} of=/dev/sdc
+  become: yes
+- name: unmount {{ sd_device }}2 partition
+  shell: umount /media/{{ ansible_user }}/writable
+  become: yes
+- name: remove {{ sd_device }}2 partition
+  shell: parted {{ sd_device }} rm 2
+  become: yes
+- name: remake {{ sd_device }}2 partition
+  shell: parted -s {{ sd_device }} mkpart primary 526336s 100%
+  become: yes
+- name: make mount point
+  file:
+    path: /media/{{ ansible_user }}/writable
+    state: directory
+    owner: "{{ ansible_user }}"
+    group: "root"
+    mode: "775"
+  become: yes
+- name: mount {{ sd_device }}2 partition
+  shell: mount {{ sd_device }}2 /media/{{ ansible_user }}/writable
+  become: yes
