@@ -53,6 +53,6 @@
   mount:
     path: /media/{{ ansible_user }}/mount_point
     src: "{{ sd_device }}2"
-    state: present
+    state: mounted
     fstype: ext4
   become: yes
