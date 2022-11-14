@@ -49,7 +49,7 @@
 #     - noetic
 #   become: yes
 # - name: run install script for ROS2
-#   shell: chroot /media/{{ ansible_user }}/mount_point /home/register_ros2_keys.sh
+#   shell: chroot /media/{{ ansible_user }}/mount_point /bin/bash /home/register_ros2_keys.sh
 #   tags:
 #     - eloquent
 #     - foxy

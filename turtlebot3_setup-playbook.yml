@@ -5,8 +5,5 @@
     - vars/user_settings.yml
   roles:
     - role: flash
-      tags:
-      - noetic
-      - eloquent
-      - foxy
+      tags: always
     - role: setup
