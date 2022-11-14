@@ -25,11 +25,14 @@
   shell: xz -d -k -f --threads=4 /home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }}.xz
   when: image_checksum.stat.exists == false or image_checksum.stat.checksum != "{{ ubuntu_20_04.sha256sum }}"
 - name: flash image
-  shell: dd bs=512M if=/home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} of=/dev/sdc
+  shell: dd bs=512M if=/home/{{ ansible_user }}/Downloads/{{ ubuntu_20_04.filename }} of={{ sd_device }}
   become: yes
+- name: geet mount point of {{ sd_device }}2
+  shell: findmnt -s /dev/sdb2 -P -o TARGET | sed -e "s/^.\{8\}//" | sed -e "s/.\{1\}$//"
+  register: get_mount_point
 - name: unmount {{ sd_device }}2 partition
   mount:
-    path: /media/{{ ansible_user }}/turtlebot3
+    path: "{{ get_mount_point.stdout }}"
     state: unmounted
   become: yes
 - name: remove {{ sd_device }}2 partition
