@@ -7,3 +7,5 @@
     - role: flash
       tags: always
     - role: setup
+    # - role: install_driver
+    #   tags: always

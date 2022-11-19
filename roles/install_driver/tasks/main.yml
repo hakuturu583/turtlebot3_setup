@@ -1,0 +1,7 @@
+---
+- name: geet mount point of {{ sd_device }}2
+  shell: findmnt {{ sd_device }}2 -P -o TARGET | sed -e "s/^.\{8\}//" | sed -e "s/.\{1\}$//"
+  register: get_mount_point
+- name: make workspace
+  shell: chroot {{ get_mount_point.stdout }} /bin/bash mkdir -p /home/{{ turtlebot3_username }}/turtlebot3_ws
+  become: yes

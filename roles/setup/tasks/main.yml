@@ -1,8 +1,11 @@
 ---
+- name: geet mount point of {{ sd_device }}2
+  shell: findmnt {{ sd_device }}2 -P -o TARGET | sed -e "s/^.\{8\}//" | sed -e "s/.\{1\}$//"
+  register: get_mount_point
 - name: copy resolv.conf to sd card {{ sd_device }}
   copy:
     src: /etc/resolv.conf
-    dest: /media/{{ ansible_user }}/mount_point/etc/resolv.conf
+    dest: "{{ get_mount_point.stdout }}/etc/resolv.conf"
     mode: a+x
     follow: yes
   become: yes
@@ -10,7 +13,7 @@
 - name: copy qemu-user-static binary to sd card {{ sd_device }}
   copy:
     src: /usr/bin/qemu-arm-static
-    dest: /media/{{ ansible_user }}/mount_point/usr/bin/qemu-arm-static
+    dest: "{{ get_mount_point.stdout }}/usr/bin/qemu-arm-static"
     mode: a+x
     follow: yes
   become: yes
@@ -21,13 +24,13 @@
   ignore_errors: yes
   tags: always
 - name: add user {{ turtlebot3_username }} for turtlebot3
-  shell: chroot /media/{{ ansible_user }}/mount_point/ useradd -m {{ turtlebot3_username }} -g root -p {{ turtlebot3_password }}
+  shell: chroot {{ get_mount_point.stdout }} useradd -m {{ turtlebot3_username }} -g root -p {{ turtlebot3_password }}
   become: yes
   tags: always
 - name: copy install script for ROS1
   copy:
     src: "{{ ansible_env.PWD }}/scripts/register_ros_keys.sh"
-    dest: /media/{{ ansible_user }}/mount_point/home/register_ros_keys.sh
+    dest: "{{ get_mount_point.stdout }}/home/register_ros_keys.sh"
     mode: a+x
     follow: yes
   become: yes
@@ -36,7 +39,7 @@
 - name: copy install script for ROS2
   copy:
     src: "{{ ansible_env.PWD }}/scripts/register_ros2_keys.sh"
-    dest: /media/{{ ansible_user }}/mount_point/home/register_ros2_keys.sh
+    dest: "{{ get_mount_point.stdout }}/home/register_ros2_keys.sh"
     mode: a+x
     follow: yes
   become: yes
@@ -44,28 +47,28 @@
     - eloquent
     - foxy
 - name: run install script for ROS1
-  shell: chroot /media/{{ ansible_user }}/mount_point/ /bin/bash /home/register_ros_keys.sh
+  shell: chroot {{ get_mount_point.stdout }} /bin/bash /home/register_ros_keys.sh
   tags:
     - noetic
   become: yes
 - name: run install script for ROS2
-  shell: chroot /media/{{ ansible_user }}/mount_point /bin/bash /home/register_ros2_keys.sh
+  shell: chroot {{ get_mount_point.stdout }} /bin/bash /home/register_ros2_keys.sh
   tags:
     - eloquent
     - foxy
   become: yes
 - name: install ROS (noetic)
-  shell: chroot /media/{{ ansible_user }}/mount_point apt install -y ros-noetic-ros-base
+  shell: chroot {{ get_mount_point.stdout }} apt install -y ros-noetic-ros-base
   tags:
     - noetic
   become: yes
 - name: install ROS2 (eloquent)
-  shell: chroot /media/{{ ansible_user }}/mount_point apt install -y ros-eloquent-ros-base
+  shell: chroot {{ get_mount_point.stdout }} apt install -y ros-eloquent-ros-base
   tags:
     - eloquent
   become: yes
 - name: install ROS2 (foxy)
-  shell: chroot /media/{{ ansible_user }}/mount_point apt install -y ros-foxy-ros-base
+  shell: chroot {{ get_mount_point.stdout }} apt install -y ros-foxy-ros-base
   tags:
     - foxy
   become: yes
