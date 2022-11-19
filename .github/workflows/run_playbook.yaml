@@ -18,4 +18,4 @@ jobs:
     - name: make directory for mount point
       run: mkdir virtual_sd
     - name: flash empty disk image
-      run: dd if=/dev/zero of=disk.img bs=1M count=1000
+      run: dd if=/dev/zero of=disk.img bs=32M count=250
