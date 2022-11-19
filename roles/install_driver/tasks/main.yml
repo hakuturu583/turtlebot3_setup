@@ -20,5 +20,40 @@
 - name: clone turtlebot3 packages (foxy)
   shell: |
     chroot {{ get_mount_point.stdout }}
-    git clone --depth 1 -b foxy-devel https://github.com/ROBOTIS-GIT/turtlebot3.git /home/{{ turtlebot3_username }}/turtlebot3_ws/src
+    git clone --depth 1 -b foxy-devel https://github.com/ROBOTIS-GIT/turtlebot3.git /home/{{ turtlebot3_username }}/turtlebot3_ws/src/turtlebot3
   become: yes
+  tags:
+    - foxy
+- name: clone other packages
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    cd /home/{{ turtlebot3_username }}/turtlebot3_ws/src/turtlebot3 && vcs import --shallow . < turtlebot3.repos
+  become: yes
+- name: rosdep update
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    rosdep update
+  become: yes
+- name: configure dpkg
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    dpkg --configure -a
+  become: yes
+- name: rosdep install
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    cd /home/{{ turtlebot3_username }}/turtlebot3_ws &&
+    rosdep install -iry --from-paths src --rosdistro foxy
+  become: yes
+  tags:
+    - foxy
+- name: colcon build
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    source /opt/ros/foxy/setup.bash &&
+    cd /home/{{ turtlebot3_username }}/turtlebot3_ws && colcon build --symlink-install
+  become: yes
+  tags:
+    - foxy
+  args:
+    executable: /bin/bash
