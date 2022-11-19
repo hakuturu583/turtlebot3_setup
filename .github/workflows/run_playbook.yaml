@@ -1,0 +1,21 @@
+name: run_playbook
+
+on:
+  schedule:
+  - cron: 0 0 * * *
+  pull_request:
+  workflow_dispatch:
+
+
+jobs:
+  run_playbook:
+    name: run_playbook
+    runs-on: ubuntu-20.04
+    container: ubuntu:20.04
+    steps:
+    - name: make empty disk image
+      run: touch disk.img
+    - name: make directory for mount point
+      run: mkdir virtual_sd
+    - name: flash empty disk image
+      run: dd if=/dev/zero of=disk.img bs=1M count=1000
