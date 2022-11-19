@@ -17,6 +17,8 @@ jobs:
     steps:
     - name: lsblk
       run: lsblk
+    - name: mknod
+      run: mknod /dev/loop3 b 7 3
     - name: make empty disk image
       run: touch disk.img
     - name: flash empty disk image
