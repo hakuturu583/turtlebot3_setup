@@ -3,5 +3,22 @@
   shell: findmnt {{ sd_device }}2 -P -o TARGET | sed -e "s/^.\{8\}//" | sed -e "s/.\{1\}$//"
   register: get_mount_point
 - name: make workspace
-  shell: chroot {{ get_mount_point.stdout }} /bin/bash mkdir -p /home/{{ turtlebot3_username }}/turtlebot3_ws
+  shell: |
+    chroot {{ get_mount_point.stdout }} 
+    mkdir -p /home/{{ turtlebot3_username }}/turtlebot3_ws
+  become: yes
+- name: claenup workspace
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    rm -rf /home/{{ turtlebot3_username }}/turtlebot3_ws/*
+  become: yes
+- name: make src directory
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    mkdir -p /home/{{ turtlebot3_username }}/turtlebot3_ws/src
+  become: yes
+- name: clone turtlebot3 packages (foxy)
+  shell: |
+    chroot {{ get_mount_point.stdout }}
+    git clone --depth 1 -b foxy-devel https://github.com/ROBOTIS-GIT/turtlebot3.git /home/{{ turtlebot3_username }}/turtlebot3_ws/src
   become: yes
