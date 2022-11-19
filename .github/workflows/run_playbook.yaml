@@ -21,4 +21,4 @@ jobs:
     - name: make mount directory
       run: mkdir virtual_device
     - name: mount virtual_device
-      run: mount /dev/sda virtual_device
+      run: sudo mount /dev/sda virtual_device
