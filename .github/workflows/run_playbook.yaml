@@ -21,5 +21,7 @@ jobs:
       run: touch disk.img
     - name: flash empty disk image
       run: dd if=/dev/zero of=disk.img bs=32M count=250
+    - name: Setup tmate session
+      uses: mxschmitt/action-tmate@v3
     - name: mount to loopback device
       run: losetup /dev/loop0 disk.img
