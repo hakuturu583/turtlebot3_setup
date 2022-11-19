@@ -23,11 +23,9 @@ jobs:
       run: touch disk.img
     - name: flash empty disk image
       run: dd if=/dev/zero of=disk.img bs=32M count=250
-    - name: touch device file
-      run: touch /dev/loop0
     - name: losetup -f
       run: losetup -f
     - name: mount to loopback device
-      run: mount -o disk.img /dev/loop0
+      run: mount -o disk.img /dev/loop3
     - name: lsblk
       run: lsblk
