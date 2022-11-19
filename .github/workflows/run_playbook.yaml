@@ -15,10 +15,19 @@ jobs:
     runs-on: ubuntu-20.04
     container: ubuntu:20.04
     steps:
-    - uses: actions/checkout@v2-beta
     - name: lsblk
       run: lsblk
-    - name: make mount directory
-      run: mkdir virtual_device
-    - name: mount virtual_device
-      run: sudo mount /dev/sda virtual_device
+    - name: mknod
+      run: mknod /dev/loop3 b 7 3
+    - name: chmod
+      run: chmod 775 /dev/loop3
+    - name: make empty disk image
+      run: touch disk.img
+    - name: flash empty disk image
+      run: dd if=/dev/zero of=disk.img bs=32M count=250
+    - name: losetup -f
+      run: losetup -f
+    - name: mount to loopback device
+      run: mount -o disk.img /dev/loop3
+    - name: lsblk
+      run: lsblk
