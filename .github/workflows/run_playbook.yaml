@@ -15,7 +15,7 @@ jobs:
     steps:
     - name: make empty disk image
       run: touch disk.img
-    - name: make directory for mount point
-      run: mkdir virtual_sd
     - name: flash empty disk image
       run: dd if=/dev/zero of=disk.img bs=32M count=250
+    - name: mount to loopback device
+      run: losetup /dev/loop0 disk.img
