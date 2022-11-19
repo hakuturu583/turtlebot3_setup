@@ -27,7 +27,7 @@ jobs:
       run: dd if=/dev/zero of=disk.img bs=32M count=250
     - name: losetup -f
       run: losetup -f
+    - name: setup loopback
+      run: losetup /dev/loop3 disk.img
     - name: lsblk
       run: lsblk
-    - name: mount to loopback device
-      run: mount -o disk.img /dev/loop3
